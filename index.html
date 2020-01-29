@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Play - ClassiCube.net</title>
+  <meta name="viewport" content="width=device-width">
+  <meta name="theme-color" content="#9873ac" />
+  <meta name="description" content="Free multiplayer sandbox block game">
+  <meta name="keywords" content="Minecraft,Free,Multiplayer,Free Minecraft,ClassiCube,Classic Cube,miecraft,miencraft,video games,fre minecraft,minecraft classic,minecraft classic on android,mojang,microsoft minecraft,play.jsp">
+  <link href="stylesheets/fonts.css" rel="stylesheet" type="text/css">
+  <link href="stylesheets/style.css" rel="stylesheet" type="text/css">
+  <link href="stylesheets/foundation-icons.css" rel="stylesheet" type="text/css">
+  <style>
+    @import url("dark.scss?v=19") (prefers-color-scheme: dark);
+  </style>
+  <script type="text/javascript" src="/js/jquery.js"></script>
+  <script type="text/javascript" src="/js/foundation.js"></script>
+  <script type="text/javascript" src="/js/ih.playerCards.js?v=19"></script>
+</head>
+
+<body>
+  <div id="header">
+    <div class="row">
+      <a href="/">
+        <h1 class="small-12 medium-1 columns">MerVoxels</h1>
+      </a>
+      <span id="mnav_cont" class="show-for-small-only">
+        <label for="navtoggle">
+          <div id="navtoggle_btn"><i class="fi-list"> </i></div>
+        </label>
+        <input type="checkbox" style="display:none;" id="navtoggle">
+        <div id="mnav">
+          <a href="/forum/">Forum</a><a href="/server/list/">Servers</a><a href="/server/play/">Play</a><a href="/acc/login">Log in</a><a href="/acc/register/" class="button">Sign up</a>
+        </div>
+      </span>
+      <div id="nav" class="show-for-medium-up">
+        <a href="/forum/">Forum</a><a href="/server/list/">Servers</a><a href="/server/play/">Play</a><a href="/acc/login">Log in</a><a href="/acc/register/" class="button">Sign up</a>
+      </div>
+    </div>
+  </div>
+  <div id="body">
+    <div class="sec">
+      <div class="row">
+        <canvas class="emscripten" id="ClassiCubeCanvas" oncontextmenu="event.preventDefault()" tabindex=-1 width="1000" height="562"></canvas>
+        <span id="logmsg"></span>
+      </div>
+    </div>
+    <script type='text/javascript'>
+      // need to load IndexedDB before running the game
+      function preloadIndexedDB() {
+        addRunDependency('load-idb');
+        FS.mkdir('/classicube');
+        FS.mount(IDBFS, {}, '/classicube');
+        FS.syncfs(true, function(err) {
+          assert(!err);
+          removeRunDependency('load-idb');
+        })
+      }
+
+      function resizeGameCanvas() {
+        var cc_canv = $('canvas#ClassiCubeCanvas');
+
+        var dpi = window.devicePixelRatio;
+
+        var aspect_ratio = 16 / 9;
+
+        var viewport_w = cc_canv.parent().width();
+        var viewport_h = viewport_w / aspect_ratio;
+
+        var canv_w = viewport_w;
+        var canv_h = viewport_h;
+
+        canv_h = Math.round(canv_h);
+        canv_w = Math.round(canv_w);
+
+        if (canv_h % 2) {
+          canv_h = canv_h - 1;
+        }
+
+        if (canv_w % 2) {
+          canv_w = canv_w - 1;
+        }
+
+
+        cc_canv[0].width = canv_w * dpi;
+        cc_canv[0].height = canv_h * dpi;
+      }
+
+      var Module = {
+        preRun: [preloadIndexedDB, resizeGameCanvas],
+        postRun: [],
+        arguments: ['Singleplayer'],
+        print: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          console.log(text);
+        },
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          console.error(text);
+        },
+        canvas: (function() {
+          var canvas = document.getElementById('ClassiCubeCanvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) {
+            alert('WebGL context lost. You will need to reload the page.');
+            e.preventDefault();
+          }, false);
+
+          return canvas;
+        })(),
+        setStatus: function(text) {
+          console.log(text);
+          var logElement = document.getElementById('logmsg');
+          logElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = function(event) {
+        // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function(text) {
+          if (text) Module.printErr('[post-exception status] ' + text);
+        };
+      };
+    </script>
+    <script async type="text/javascript" src="/js/ClassiCube.js?v=6"></script>
+    <div id="content">
+      <div class="container">
+        <h3>Default Controls</h3>
+        <img class="controls" src="/assets/controls.png">
+      </div>
+    </div>
+  </div>
+  <div id="footer" class="row">
+    <div class="small-6 medium-4 columns">
+      <a href="https://github.com/UnknownShadow200/ClassiCube"><i class="fi-social-github"></i> Client Source Code</a>
+      <a href="https://github.com/UnknownShadow200/ClassiCube/issues"><i class="fi-alert"></i> Client Issues</a>
+      <a href="https://discord.gg/tU7mAX3"><i class="fi-comments"></i> Discord</a>
+    </div>
+    <div class="small-6 medium-4 columns">
+      <a href="https://patreon.com/ClassiCube"><i class="fi-heart"></i> Support Us</a>
+      <a href="/patreon/"><i class="fi-thumbnails"></i> Patrons</a>
+      <a href="https://webchat.esper.net/?channels=classicube"><i class="fi-web"></i> IRC</a>
+    </div>
+    <div class="small-12 medium-4 columns">
+      <p id="copyright">ClassiCube is in no way affiliated with Minecraft, Mojang AB, Microsoft, or any of their partners. <a href="/terms/"> Terms of use</a></p>
+    </div>
+  </div>
+</body>
+
+</html>
